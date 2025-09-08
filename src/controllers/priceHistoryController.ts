@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { PriceHistory } from "../models/PriceHistory";
 
-// GET всі записи історії цін
 export const getPriceHistory = async (req: Request, res: Response) => {
   try {
     const history = await PriceHistory.find();

@@ -3,7 +3,6 @@ import { getUsers, createUser, updateUser, deleteUser } from "../controllers/use
 
 const router = express.Router();
 
-// Ці маршрути потребують авторизації
 router.get("/", getUsers);
 router.post("/", createUser);
 router.put("/:id", updateUser);

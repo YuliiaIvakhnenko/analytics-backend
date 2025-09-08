@@ -1,0 +1,360 @@
+openapi: 3.0.0
+info:
+  title: My API
+  version: 1.0.0
+  description: Документація до API з авторизацією та CRUD для користувачів, клієнтів, цінних паперів та інвестицій.
+servers:
+  - url: http://localhost:5000/api
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [admin, user]
+      required:
+        - email
+        - role
+
+    Client:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        contact:
+          type: string
+      required:
+        - name
+
+    Security:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        price:
+          type: number
+      required:
+        - name
+        - type
+
+    Investment:
+      type: object
+      properties:
+        id:
+          type: string
+        clientId:
+          type: string
+        securityId:
+          type: string
+        amount:
+          type: number
+      required:
+        - clientId
+        - securityId
+        - amount
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/register:
+    post:
+      summary: Реєстрація користувача
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "201":
+          description: Успішна реєстрація
+        "400":
+          description: Невірні дані
+
+  /auth/login:
+    post:
+      summary: Авторизація користувача
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Успішна авторизація
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+        "401":
+          description: Невірні дані
+
+  /auth/refresh:
+    post:
+      summary: Оновлення токена
+      tags: [Auth]
+      responses:
+        "200":
+          description: Новий accessToken
+        "401":
+          description: Невірний refresh token
+
+  /clients:
+    get:
+      summary: Отримати список клієнтів
+      tags: [Clients]
+      responses:
+        "200":
+          description: Список клієнтів
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Client"
+    post:
+      summary: Додати клієнта
+      tags: [Clients]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Client"
+      responses:
+        "201":
+          description: Створено
+
+  /clients/{id}:
+    get:
+      summary: Отримати клієнта за ID
+      tags: [Clients]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Клієнт
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+        "404":
+          description: Не знайдено
+    put:
+      summary: Оновити клієнта
+      tags: [Clients]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Client"
+      responses:
+        "200":
+          description: Оновлено
+    delete:
+      summary: Видалити клієнта
+      tags: [Clients]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Видалено
+
+  /securities:
+    get:
+      summary: Отримати список цінних паперів
+      tags: [Securities]
+      responses:
+        "200":
+          description: Список
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Security"
+    post:
+      summary: Додати цінний папір
+      tags: [Securities]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Security"
+      responses:
+        "201":
+          description: Створено
+
+  /securities/{id}:
+    get:
+      summary: Отримати цінний папір
+      tags: [Securities]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Знайдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Security"
+    put:
+      summary: Оновити цінний папір
+      tags: [Securities]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Security"
+      responses:
+        "200":
+          description: Оновлено
+    delete:
+      summary: Видалити цінний папір
+      tags: [Securities]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Видалено
+
+  /investments:
+    get:
+      summary: Отримати всі інвестиції
+      tags: [Investments]
+      responses:
+        "200":
+          description: Список інвестицій
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Investment"
+    post:
+      summary: Додати інвестицію
+      tags: [Investments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Investment"
+      responses:
+        "201":
+          description: Створено
+
+  /investments/{id}:
+    get:
+      summary: Отримати інвестицію
+      tags: [Investments]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Інвестиція
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Investment"
+    put:
+      summary: Оновити інвестицію
+      tags: [Investments]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Investment"
+      responses:
+        "200":
+          description: Оновлено
+    delete:
+      summary: Видалити інвестицію
+      tags: [Investments]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Видалено
